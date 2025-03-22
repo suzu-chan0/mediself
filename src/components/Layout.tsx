@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, ReactNode } from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Search, User, Home, Clock, BarChart2 } from 'lucide-react'
 
-export default function Layout({ children, title = 'MediSelf' }) {
+type LayoutProps = {
+  children: ReactNode
+  title?: string
+}
+
+export default function Layout({ children, title = 'MediSelf' }: LayoutProps) {
   const [cartCount, setCartCount] = useState(0)
 
   useEffect(() => {
@@ -12,35 +17,36 @@ export default function Layout({ children, title = 'MediSelf' }) {
       const cart = JSON.parse(localStorage.getItem('cart') || '[]')
       setCartCount(cart.length)
     }
-    updateCartCount()
 
-    // 更新時も反映
+    updateCartCount()
     window.addEventListener('storage', updateCartCount)
     return () => window.removeEventListener('storage', updateCartCount)
   }, [])
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <>
       <header className="bg-teal-600 text-white p-4 shadow-md">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold">MediSelf</Link>
+          <Link href="/" className="text-xl font-bold">
+            {title}
+          </Link>
           <div className="flex space-x-4">
             <Search size={20} className="cursor-pointer" />
             <Link href="/cart">
               <div className="relative cursor-pointer">
                 <ShoppingCart size={20} />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </div>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto p-4">
-        {children}
-      </main>
+      <main className="min-h-[calc(100vh-100px)] p-4">{children}</main>
 
       <nav className="bg-white border-t border-gray-200 flex justify-around items-center p-3">
         <Link href="/" className="flex flex-col items-center text-sm">
@@ -60,6 +66,6 @@ export default function Layout({ children, title = 'MediSelf' }) {
           <span className="text-xs">マイページ</span>
         </Link>
       </nav>
-    </div>
+    </>
   )
 }
