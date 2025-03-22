@@ -3,43 +3,28 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 
-interface OrderItem {
-  product: { name: string }
-  price: number
-}
-
-interface Order {
-  orderDate: string
-  totalAmount: number
-  taxEligibleAmount: number
-  orderItems: OrderItem[]
-}
-
 export default function HistoryPage() {
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<any[]>([])
   const [total, setTotal] = useState(0)
   const [taxTotal, setTaxTotal] = useState(0)
 
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
-        const res = await fetch('/api/orders')
-        const data = await res.json()
-        const fetchedOrders = data.orders || []
-        setOrders(fetchedOrders)
+      const res = await fetch('/api/orders')
+      const data = await res.json()
+      const fetchedOrders = data.orders || []
+      setOrders(fetchedOrders)
 
-        let t = 0
-        let taxT = 0
-        fetchedOrders.forEach(order => {
-          t += order.totalAmount || 0
-          taxT += order.taxEligibleAmount || 0
-        })
-        setTotal(t)
-        setTaxTotal(taxT)
-      } catch (e) {
-        console.error('注文取得エラー', e)
-      }
+      let t = 0
+      let taxT = 0
+      fetchedOrders.forEach((order: any) => {
+        t += order.totalAmount || 0
+        taxT += order.taxEligibleAmount || 0
+      })
+      setTotal(t)
+      setTaxTotal(taxT)
     }
+
     fetchOrders()
   }, [])
 
@@ -60,15 +45,6 @@ export default function HistoryPage() {
                   </p>
                   <p className="text-sm">合計金額: {order.totalAmount}円</p>
                   <p className="text-sm">税制対象額: {order.taxEligibleAmount}円</p>
-                  {order.orderItems?.length ? (
-                    <ul className="list-disc ml-4 text-sm text-gray-700 mt-2">
-                      {order.orderItems.map((item, i) => (
-                        <li key={i}>{item.product?.name ?? '不明商品'} - {item.price}円</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">商品情報がありません</p>
-                  )}
                 </div>
               ))}
             </div>
