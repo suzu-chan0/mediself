@@ -1,21 +1,35 @@
+// pages/api/skinlogs/index.js
 import prisma from '../../../lib/prisma'
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const logs = await prisma.skinLog.findMany({
-        orderBy: { logDate: 'desc' }
+        orderBy: { logDate: 'desc' },
       })
+
       return res.status(200).json(logs)
-    } catch (err) {
-      console.error('[GET-LOGS-ERROR]', err)
-      return res.status(500).json({ error: 'ログ取得失敗' })
+    } catch (error) {
+      console.error('[SKINLOGS-GET-ERROR]', error)
+      return res.status(500).json({ error: '記録取得エラー' })
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const { userId, logDate, conditionRating, description, location, symptoms, imageUrl } = req.body
+      const {
+        userId,
+        logDate,
+        conditionRating,
+        description,
+        location,
+        symptoms,
+        imageUrl,
+      } = req.body
+
+      // ログ確認ポイント：受信したPOSTデータを確認
+      console.log('[SKINLOGS-POST-REQ]', req.body)
+
       const newLog = await prisma.skinLog.create({
         data: {
           userId,
@@ -27,13 +41,14 @@ export default async function handler(req, res) {
           imageUrl,
         },
       })
+
       return res.status(200).json(newLog)
-    } catch (err) {
-      console.error('[POST-LOG-ERROR]', err)
-      return res.status(500).json({ error: '記録登録失敗' })
+    } catch (error) {
+      console.error('[SKINLOGS-POST-ERROR]', error)
+      return res.status(500).json({ error: '記録登録エラー' })
     }
   }
 
   res.setHeader('Allow', ['GET', 'POST'])
-  return res.status(405).end(`Method ${req.method} Not Allowed`)
+  return res.status(405).json({ error: `Method ${req.method} Not Allowed` })
 }

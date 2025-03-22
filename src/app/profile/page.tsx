@@ -3,31 +3,38 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 
+interface Order {
+  id: number
+  totalAmount: number
+  taxEligibleAmount: number
+  orderDate: string
+  status: string
+}
+
 export default function ProfilePage() {
-  const [orders, setOrders] = useState<any[]>([])
-  const [totalAmount, setTotalAmount] = useState(0)
-  const [taxAmount, setTaxAmount] = useState(0)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [totalAmount, setTotalAmount] = useState<number>(0)
+  const [taxAmount, setTaxAmount] = useState<number>(0)
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await fetch('/api/orders')
         const data = await res.json()
-        if (res.ok) {
-          setOrders(data.orders)
-          calculateTotals(data.orders)
+        if (res.ok && Array.isArray(data)) {
+          setOrders(data)
+          calculateTotals(data)
         }
       } catch (err) {
         console.error('注文取得エラー', err)
       }
     }
-
     fetchOrders()
   }, [])
 
-  const calculateTotals = (orders: any[]) => {
-    const total = orders.reduce((sum, o) => sum + o.totalAmount, 0)
-    const taxTotal = orders.reduce((sum, o) => sum + o.taxEligibleAmount, 0)
+  const calculateTotals = (orders: Order[]) => {
+    const total = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+    const taxTotal = orders.reduce((sum, o) => sum + (o.taxEligibleAmount || 0), 0)
     setTotalAmount(total)
     setTaxAmount(taxTotal)
   }
