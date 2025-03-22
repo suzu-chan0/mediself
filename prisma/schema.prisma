@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  gender        String?
+  age           Int?
+  skinType      String?
+  concerns      String?
+  sensitivity   String?
+  allergies     String?
+  createdAt     DateTime  @default(now())
+  orders        Order[]
+  skinLogs      SkinLog[]
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  name          String
+  category      String
+  description   String?
+  ingredients   String?
+  price         Int
+  imageUrl      String?
+  taxEligible   Boolean   @default(false)
+  stock         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  orderItems    OrderItem[]
+  symptomProducts SymptomProduct[]
+}
+
+model SymptomProduct {
+  id                  String    @id @default(cuid())
+  symptom             String
+  symptomType         String?
+  symptomLocation     String?
+  symptomSeverity     String?
+  productId           String
+  recommendationScore Int
+  product             Product   @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  userId            String
+  totalAmount       Int
+  taxEligibleAmount Int
+  orderDate         DateTime    @default(now())
+  status            String      @default("pending")
+  user              User        @relation(fields: [userId], references: [id])
+  orderItems        OrderItem[]
+}
+
+model OrderItem {
+  id          String    @id @default(cuid())
+  orderId     String
+  productId   String
+  quantity    Int
+  price       Int
+  order       Order     @relation(fields: [orderId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+}
+
+model SkinLog {
+  id              String    @id @default(cuid())
+  userId          String
+  logDate         DateTime  @default(now())
+  conditionRating Int?
+  description     String?
+  imageUrl        String?
+  location        String?
+  symptoms        String?
+  user            User      @relation(fields: [userId], references: [id])
+}
